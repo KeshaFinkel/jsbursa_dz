@@ -34,6 +34,7 @@ window.addEventListener('load', function () {
     /*clear field*/
     function kill_field(){
         document.querySelector(".field").innerHTML = "";
+        document.querySelector(".winner-message").innerHTML = "";
         game = {
             field: [],
             player:"x"
@@ -43,19 +44,20 @@ window.addEventListener('load', function () {
 
     /*start game*/
     function start_game(){
-        var size = Number(document.querySelector(".count").value);
-        document.querySelector(".error-message").innerText = "";
+        var size = Number(document.querySelector(".count").value),
+            check = (/^\d+$/);
+        document.querySelector(".error-message").innerHTML = "";
 
-        if (size == size) {
+        if (check.test(size)) {
             if (size < 16 && size > 4) {
                 draw_field(size);
                 document.querySelector(".startGame").style.display = "none";
                 document.querySelector(".mainGame").style.display = "block";
             } else {
-               document.querySelector(".error-message").innerText = "Вы ввели некорректное число";
+               document.querySelector(".error-message").innerHTML = "Вы ввели некорректное число";
             }
         } else {
-            document.querySelector(".error-message").innerText = "Вы ввели некорректное число";
+            document.querySelector(".error-message").innerHTML = "Вы ввели некорректное число";
         }
     }
     /*begin new game*/
