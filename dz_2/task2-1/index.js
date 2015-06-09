@@ -3,9 +3,12 @@ var tasks = [];
 function add_task(event){
     if (document.querySelector('input[type=text]').value) {
         var task_text = document.querySelector('input[type=text]').value;
-        render_task(task_text);
         tasks.push(task_text);
         tasks.sort();
+        document.querySelector('ul').innerHTML = '';
+        for (var i=0;i < tasks.length; i++) {
+            render_task(tasks[i]);
+        }
         window.localStorage.setItem('tasks',JSON.stringify(tasks));
         document.querySelector('input[type=text]').value = '';
     }
@@ -13,7 +16,6 @@ function add_task(event){
 /*append task to ul with tasks*/
 function render_task(text) {
     var task = document.createElement('li');
-
     task.textContent = text;
     document.querySelector('ul').appendChild(task);
 }

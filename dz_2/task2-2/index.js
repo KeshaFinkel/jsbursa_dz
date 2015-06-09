@@ -16,7 +16,7 @@ window.addEventListener('load', function() {
     /*add error function*/
     function error(element) {
         var check = (/(^[\d]+[.]?[\d]+$)|(^\d+$)/);
-        if(!(check.test(element.value))) {
+        if (!(check.test(element.value))) {
             if (!(element.nextSibling.classList.contains('error-message'))) {
                 var error = document.createElement('div');
                 error.className = 'error-message';
