@@ -104,7 +104,6 @@ window.addEventListener('load', function () {
         for (var i=0;i<cell.length;i++){
             cell[i].removeEventListener("click",turn);
         }
-
     }
 
     if (localStorage.game) {
