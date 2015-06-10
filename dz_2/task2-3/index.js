@@ -22,7 +22,7 @@ window.addEventListener('load', function () {
                 if(game.field[i][j]){
                     cell.classList.add(game.field[i][j]);
                 } else {
-                    game.field[i][j]="";
+                    game.field[i][j]= null;
                     cell.addEventListener("click",turn);
                 }
 
@@ -30,6 +30,7 @@ window.addEventListener('load', function () {
             }
             document.querySelector(".field").appendChild(row);
         }
+        window.localStorage.setItem('game',JSON.stringify(game));
     }
     /*clear field*/
     function kill_field(){
