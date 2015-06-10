@@ -10,13 +10,19 @@ function send(type,element) {
         if ((req.readyState == 4) && (req.status == 200)) {
             if (JSON.parse(req.response)){
                 element.innerHTML = 'OK';
+                element.style.color = 'green';
+                element.style.fontWeight = 'bold';
             }else {
                 element.innerHTML = 'Failed';
+                element.style.color = 'red';
+                element.style.fontWeight = 'bold';
             }
         }
     });
     req.addEventListener("error", function(e){
         element.innerHTML = 'Failed';
+        element.style.color = 'red';
+        element.style.fontWeight = 'bold';
     });
     req.send(null);
 }
