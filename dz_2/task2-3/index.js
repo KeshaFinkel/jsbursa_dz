@@ -46,7 +46,7 @@ window.addEventListener('load', function () {
     /*start game*/
     function start_game(){
         var size = Number(document.querySelector(".count").value),
-            check = (/^\d+$/);
+          check = (/^\d+$/);
         document.querySelector(".error-message").innerHTML = "";
 
         if (check.test(size)) {
@@ -55,7 +55,7 @@ window.addEventListener('load', function () {
                 document.querySelector(".startGame").style.display = "none";
                 document.querySelector(".mainGame").style.display = "block";
             } else {
-               document.querySelector(".error-message").innerHTML = "Вы ввели некорректное число";
+                document.querySelector(".error-message").innerHTML = "Вы ввели некорректное число";
             }
         } else {
             document.querySelector(".error-message").innerHTML = "Вы ввели некорректное число";
@@ -79,7 +79,7 @@ window.addEventListener('load', function () {
     /* making turn*/
     function turn(event){
         var turn_x = event.target.dataset.x,
-            turn_y = event.target.dataset.y;
+          turn_y = event.target.dataset.y;
 
         game.field[turn_y][turn_x] = game.player;
 
