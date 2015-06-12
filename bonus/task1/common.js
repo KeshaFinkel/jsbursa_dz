@@ -4,17 +4,16 @@
 
 /* dat funct*/
 function handleClickOutside(element, fn){
-  element.addEventListener("click", function(){
-    if(event.target != element) {
-
+  document.querySelector('body').addEventListener('click',function(event){
+    if(event.target!==element){
+      fn.call();
     }
-    console.log(event);
   });
 }
 
 /**/
-function draw(element) {
-  element.style.background = "rgba(90,0,0,0.3)";
+function draw() {
+  console.log("function called");
 }
 
 /* init function*/
