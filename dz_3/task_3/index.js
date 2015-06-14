@@ -23,7 +23,6 @@ function connectW(url, onMessage) {
 /*add Game to list*/
 function addGame(id) {
   var li = document.createElement('li');
-
   li.id = "id"+ String(id).slice(2);
   li.innerHTML = '<b>ID:</b>'+ id;
   document.querySelector('.existing-games').appendChild(li);

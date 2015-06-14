@@ -8,19 +8,20 @@ function send(type,element) {
     req.open(type , 'https://cors-test.appspot.com/test', true);
     req.addEventListener('readystatechange', function(e){
         if ((req.readyState == 4) && (req.status == 200)) {
-            if (JSON.parse(req.response)){
-                element.innerHTML = 'OK';
+            console.log(JSON.parse(req.response));
+            if (JSON.parse(req.response).status == 'ok'){
+                element.textContent = 'OK';
                 element.style.color = 'green';
                 element.style.fontWeight = 'bold';
             }else {
-                element.innerHTML = 'Failed';
+                element.textContent = 'Failed';
                 element.style.color = 'red';
                 element.style.fontWeight = 'bold';
             }
         }
     });
     req.addEventListener("error", function(e){
-        element.innerHTML = 'Failed';
+        element.textContent = 'Failed';
         element.style.color = 'red';
         element.style.fontWeight = 'bold';
     });
