@@ -6,10 +6,9 @@
 function send(type, element) {
   var req = new XMLHttpRequest();
   req.open(type, 'https://cors-test.appspot.com/test', true);
-  req.addEventListener('readystatechange', function (e) {
-    console.log(req);
-    if (req.readyState == 4) {
-      if (req.status == 200) {
+  req.addEventListener('readystatechange', function rsc() {
+    console.log(req.readyState);
+      if ((req.status == 200)&&(req.readyState == 4)) {
         if (JSON.parse(req.response).status == 'ok') {
           element.textContent = 'OK';
           element.style.color = 'green';
@@ -19,12 +18,11 @@ function send(type, element) {
           element.style.color = 'red';
           element.style.fontWeight = 'bold';
         }
-      } else {
+      } else if (req.readyState == 4) {
         element.textContent = 'Failed';
         element.style.color = 'red';
         element.style.fontWeight = 'bold';
       }
-    }
   });
   req.send(null);
 }
@@ -32,7 +30,8 @@ function send(type, element) {
 
 /* render*/
 function render(element) {
-  var type = element.className;
+  var type = element.className.toUpperCase();
+  console.log(type);
   send(type, element);
 }
 /*init*/
