@@ -4,25 +4,25 @@
 
 /*send request*/
 function send(type, element) {
+  'use strict';
   var req = new XMLHttpRequest();
-  req.open(type, 'https://cors-test.appspot.com/test', true);
+  req.open(type, 'http://cors-test.appspot.com/test', true);
   req.addEventListener('readystatechange', function rsc() {
-    console.log(req.readyState);
-      if ((req.status == 200)&&(req.readyState == 4)) {
-        if (JSON.parse(req.response).status == 'ok') {
-          element.textContent = 'OK';
-          element.style.color = 'green';
-          element.style.fontWeight = 'bold';
-        } else {
-          element.textContent = 'Failed';
-          element.style.color = 'red';
-          element.style.fontWeight = 'bold';
-        }
-      } else if (req.readyState == 4) {
+    if ((req.status === 200) && (req.readyState === 4)) {
+      if (JSON.parse(req.response).status === 'ok') {
+        element.textContent = 'OK';
+        element.style.color = 'green';
+        element.style.fontWeight = 'bold';
+      } else {
         element.textContent = 'Failed';
         element.style.color = 'red';
         element.style.fontWeight = 'bold';
       }
+    } else if (req.readyState === 4) {
+      element.textContent = 'Failed';
+      element.style.color = 'red';
+      element.style.fontWeight = 'bold';
+    }
   });
   req.send(null);
 }
@@ -30,14 +30,17 @@ function send(type, element) {
 
 /* render*/
 function render(element) {
+  'use strict';
   var type = element.className.toUpperCase();
-  console.log(type);
   send(type, element);
 }
 /*init*/
-window.addEventListener('load', function () {
+window.addEventListener('load', function init() {
+  'use strict';
+  var i;
   var spans = document.querySelectorAll('span');
-  for (var i = 0; i < spans.length; i++) {
+  for (i = 0; i < spans.length; i++) {
     render(spans[i]);
   }
 });
+
