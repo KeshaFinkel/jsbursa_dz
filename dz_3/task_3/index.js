@@ -4,8 +4,9 @@ var gameState = {
   player: '',
   game: '',
   side: '',
-  turn: 'x',
-  turns: ''
+  enemy: '',
+  move: 101,
+  won: false
 }
 /*---request and socket---*/
 /*websocket connect*/
@@ -25,14 +26,10 @@ function connectW(url, onMessage) {
   };
 
   socket.onmessage = onMessage;
-
-  socket.onerror = function(error) {
-    console.log('Ошибка ' + error.message);
-  };
 }
 
 /*request send function*/
-function sendReq(type, url, data, onSuc, onErr) {
+function sendReq(type, url, data, onSuc, onErr,headers) {
   var req = new XMLHttpRequest();
   onSuc = onSuc || function sucDef(e){
     if ((req.readyState === 4) && (req.status === 200)) {
@@ -49,6 +46,10 @@ function sendReq(type, url, data, onSuc, onErr) {
   if (data !== null) {
     req.setRequestHeader('Content-Type', 'application/json');
   }
+  if (headers === true){
+    req.setRequestHeader('GAME-ID', String(gameState.game));
+    req.setRequestHeader('PLAYER-ID', String(gameState.player));
+  }
   req.send(data);
   req.addEventListener('readystatechange',onSuc);
 }
@@ -58,17 +59,70 @@ function sendReq(type, url, data, onSuc, onErr) {
 function addGame(id) {
   var li = document.createElement('li');
   li.id = id;
-  li.innerHTML = '<b>ID:</b>' + id;
+  li.innerHTML = id;
   document.querySelector('.existing-games').appendChild(li);
 }
 /*remove game*/
 function removeGame(id) {
   document.querySelector('.existing-games').removeChild(document.getElementById(id));
 }
-
+/*----gameplay----*/
+/*---listen functions---*/
+/*listen succes*/
+function listenSuc(event){
+  var req = event.target;
+  if ((req.readyState === 4) && (req.status === 200)) {
+    if (JSON.parse(req.response).move) {
+      gameState.move = JSON.parse(req.response).move - 1;
+      document.querySelectorAll('.cell')[gameState.move].classList.add(gameState.enemy);
+      document.querySelector('.field').addEventListener('click', turn);
+    }
+    if (JSON.parse(req.response).win) {
+      console.log(JSON.parse(req.response).win);
+      document.querySelectorAll('.status-message')[1].textContent = JSON.parse(req.response).win;
+      document.querySelectorAll('.newGame').textContent = 'Новая игра';
+      gameState.won = true;
+    }
+  } else if((req.readyState === 4) && (req.status !== 410)){
+    listen();
+  }
+}
+/*listen*/
+function listen(){
+  sendReq('GET',gameUrls.move,null,listenSuc,listen,true);
+}
+/*---turn functions---*/
+/*turn succes*/
+function turnSuc(event) {
+  var req = event.target;
+  if ((req.readyState === 4) && (req.status === 200)) {
+    console.log(Number(gameState.move));
+    document.querySelectorAll('.cell')[gameState.move].classList.add(gameState.side);
+    document.querySelector('.field').removeEventListener('click',turn);
+    if(JSON.parse(req.response).win) {
+      document.querySelectorAll('.status-message')[1].textContent = JSON.parse(req.response).win;
+      document.querySelectorAll('.newGame').textContent = 'Новая игра';
+      gameState.won = true;
+    } else {
+      listen();
+    }
+  } else if (req.readyState === 4) {
+    document.querySelector('.field').removeEventListener('click',turn);
+    document.querySelectorAll('.status-message')[1].textContent = JSON.parse(req.response).message || 'Неизвестная ошибка';
+  }
+}
+/*turn error*/
+function turnErr(event) {
+  document.querySelector('.status-message').textContent = event.target.response || 'неизвестная ошибка';
+  console.log(event.target.response);
+}
 /* make turn */
 function turn(event){
   var number = event.target.dataset.number;
+  var daMove = {'move': number};
+  gameState.move = number - 1;
+  event.stopPropagation();
+  sendReq('POST',gameUrls.move,JSON.stringify(daMove),turnSuc,turnErr,true);
 }
 /*----render field----*/
 function draw_field() {
@@ -90,19 +144,65 @@ function draw_field() {
   }
 }
 
-
+/*newgamebutton*/
+/*onsuccess*/
+function buttSuc(event){
+  var req = event.target;
+  if ((req.readyState === 4) && (req.status === 200)) {
+    document.querySelector(".startGame").style.display = "block";
+    document.querySelector(".mainGame").style.display = "none";
+  } else if (req.readyState === 4) {
+    document.querySelector('.field').removeEventListener('click',turn);
+    document.querySelectorAll('.status-message')[1].textContent = JSON.parse(req.response).message || 'Неизвестная ошибка';
+  }
+}
+/*onclick*/
+function newButt(){
+  if (gameState.won === true) {
+    document.querySelector(".startGame").style.display = "block";
+    document.querySelector(".mainGame").style.display = "none";
+  } else {
+    sendReq('PUT',gameUrls.surrender,null,buttSuc,null,true);
+  }
+}
 /*-----game lobby functions------*/
 /*start succes*/
 function startSuc(event){
   var req = event.target;
   if ((req.readyState === 4) && (req.status === 200)) {
     gameState.side = JSON.parse(req.response)['side'];
+    if (gameState.side == 'x') {
+      gameState.enemy = 'o';
+    } else {
+      gameState.enemy = 'x';
+    }
+    gameState.won = false;
+    document.querySelector('.newGame').textContent = 'Сдаться';
     draw_field();
     document.querySelector(".startGame").style.display = "none";
     document.querySelector(".mainGame").style.display = "block";
+    if (gameState.side === 'x'){
+      document.querySelector('.field').addEventListener('click',turn);
+    } else {
+      listen();
+    }
+  } else if (req.readyState === 4) {
+    document.querySelector('.createGame').disabled = false;
+    if (req.status === 410) {
+      document.querySelector('.status-message').textContent = 'Ошибка старта игры: другой игрок не ответил';
+    } else {
+      document.querySelector('.status-message').textContent = 'Неизвестная ошибка старта игры';
+    }
   }
 }
-
+/*start error*/
+function startErr(event){
+  var req = event.target;
+  if ((req.readyState === 4) && (req.status !== 200)) {
+    document.querySelector('.createGame').disabled = false;
+    document.querySelector('.status-message').textContent = 'Ошибка';
+  }
+}
 /*start game*/
 function startGame(player_id){
   var data = {};
@@ -111,7 +211,7 @@ function startGame(player_id){
   data.player = gameState.player;
   document.querySelector('.createGame').disabled = true;
   document.querySelector('.status-message').textContent = 'Ожидаем начала игры';
-  sendReq('POST', gameUrls.gameReady, JSON.stringify(data),startSuc);
+  sendReq('POST', gameUrls.gameReady, JSON.stringify(data),startSuc,startErr);
 }
 
 /*game register new*/
@@ -123,6 +223,9 @@ function gReg(event){
     gameState.game = id.register;
     console.log('registernewgame',gameState);
     socket.send(JSON.stringify(id));
+  } else if(req.readyState === 4){
+    document.querySelector('.createGame').disabled = false;
+    document.querySelector('.status-message').textContent = 'Ошибка создания игры';
   }
 }
 /*game reg connect*/
@@ -133,14 +236,17 @@ function gRegC(event){
     socket.send(JSON.stringify(id));
 }
 /*game register new err*/
-function eReg(){
-  document.querySelector('.createGame').disabled = false;
-  document.querySelector('.status-message').textContent = 'Ошибка создания игры';
+function eReg(event){
+  var req = event.target;
+  if ((req.readyState === 4) && (req.status !== 200)) {
+    document.querySelector('.createGame').disabled = false;
+    document.querySelector('.status-message').textContent = 'Ошибка создания игры';
+  }
 }
 /*game create*/
-function gameCreate(event) {
+function gameCreate() {
   document.querySelector('.createGame').disabled = true;
-  sendReq('POST', gameUrls.newGame,null,gReg,eReg);
+  sendReq('POST', gameUrls.newGame,null,gReg);
 }
 
 /*gameslist*/
@@ -158,7 +264,8 @@ function gamesList(e) {
   }
   if (data.error) {
     console.log('error:' + data.error);
-    document.querySelector('.status-message').textContent = data.error;
+    document.querySelector('.status-message').textContent = 'Ошибка создания игры';
+    document.querySelector('.createGame').disabled = false;
   }
 }
 
@@ -167,4 +274,5 @@ window.addEventListener('load', function() {
   connectW(gameUrls.list,gamesList);
   document.querySelector('.createGame').addEventListener('click',gameCreate);
   document.querySelector('.existing-games').addEventListener('click',gRegC);
+  document.querySelector('.newGame').addEventListener('click',newButt);
 });
