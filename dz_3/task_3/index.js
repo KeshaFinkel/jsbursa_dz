@@ -151,6 +151,8 @@ function buttSuc(event){
   if ((req.readyState === 4) && (req.status === 200)) {
     document.querySelector(".startGame").style.display = "block";
     document.querySelector(".mainGame").style.display = "none";
+    document.querySelector('.createGame').disabled = false;
+    document.querySelector('.status-message').textContent = 'Ошибка создания игры';
   } else if (req.readyState === 4) {
     document.querySelector('.field').removeEventListener('click',turn);
     document.querySelectorAll('.status-message')[1].textContent = JSON.parse(req.response).message || 'Неизвестная ошибка';
@@ -161,6 +163,8 @@ function newButt(){
   if (gameState.won === true) {
     document.querySelector(".startGame").style.display = "block";
     document.querySelector(".mainGame").style.display = "none";
+    document.querySelector('.createGame').disabled = false;
+    document.querySelector('.status-message').textContent = 'Ошибка создания игры';
   } else {
     sendReq('PUT',gameUrls.surrender,null,buttSuc,null,true);
   }
